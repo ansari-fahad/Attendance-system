@@ -71,10 +71,25 @@ class DBManager:
             )
             return cur.fetchone()
 
-    def person_exists(self, person_id: str) -> bool:
+    def get_person_by_id(self, person_id: str):
+        with self._connect() as conn:
+            cur = conn.execute(
+                "SELECT person_id, label_id, name, person_type, department FROM persons WHERE person_id = ?",
+                (person_id,)
+            )
+            return cur.fetchone()
+
+    def person_exists(self, person_id:str) -> bool:
         with self._connect() as conn:
             cur = conn.execute("SELECT 1 FROM persons WHERE person_id = ?", (person_id,))
             return cur.fetchone() is not None
+
+    def update_person(self, person_id: str, name: str, person_type: str, department: str = None):
+        with self._connect() as conn:
+            conn.execute(
+                "UPDATE persons SET name = ?, person_type = ?, department = ? WHERE person_id = ?",
+                (name, person_type, department, person_id)
+            )
 
     def mark_attendance(self, person_id: str, confidence: float) -> bool:
         now = datetime.datetime.now()
